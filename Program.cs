@@ -9,10 +9,15 @@ namespace cslox
     {
         static int Main(string[] args)
         {
-            foreach (var arg in args)
-            {
-                Console.WriteLine(arg);
-            }
+            var expr = new Expr.Binary(
+                new Expr.Unary(
+                    new Token(TokenType.Minus, "-", null, 1),
+                    new Expr.Literal(123)),
+                new Token(TokenType.Star, "*", null, 1),
+                new Expr.Grouping(
+                    new Expr.Literal(45.67)));
+
+            Console.WriteLine(AstPrinter.Print(expr));
 
             if (args.Length > 1)
             {
@@ -373,6 +378,22 @@ namespace cslox
     {
         public abstract TResult Accept<TResult>(IVisitor<TResult> visitor);
 
+        internal class Unary : Expr
+        {
+            public Unary(Token op, Expr right)
+            {
+                Op = op;
+                Right = right;
+            }
+
+            public Token Op { get; }
+            public Expr Right { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitUnary(this);
+            }
+        }
 
         internal class Binary : Expr
         {
@@ -395,34 +416,64 @@ namespace cslox
 
         internal class Literal : Expr
         {
+            public Literal(object value)
+            {
+                Value = value;
+            }
+
+            public object Value { get; }
+
             public override TResult Accept<TResult>(IVisitor<TResult> visitor)
             {
                 return visitor.VisitLiteral(this);
             }
         }
 
+        internal class Grouping : Expr
+        {
+            public Grouping(Expr inner)
+            {
+                Inner = inner;
+            }
+
+            public Expr Inner { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitGrouping(this);
+            }
+        }
+
         internal interface IVisitor<TResult>
         {
-            TResult VisitBinary(Expr.Binary expr);
-            TResult VisitLiteral(Expr.Literal expr);
+            TResult VisitBinary(Binary expr);
+            TResult VisitUnary(Unary expr);
+            TResult VisitLiteral(Literal expr);
+            TResult VisitGrouping(Grouping expr);
         }
     }
 
     class AstPrinter : Expr.IVisitor<string>
     {
-        public string VisitBinary(Expr.Binary expr)
+        public static string Print(Expr expr)
         {
-            return Parenthesize(expr.Op.Lexeme, expr.Left, expr.Right);
+            var printer = new AstPrinter();
+            return printer.PrintInner(expr);
         }
 
-        public string VisitLiteral(Expr.Literal expr)
-        {
-            throw new NotImplementedException();
-        }
-
-        string Print(Expr expr)
+        string PrintInner(Expr expr)
         {
             return expr.Accept(this);
+        }
+
+        string Parenthesize(Expr expr)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append("(");
+            builder.Append(expr.Accept(this));
+            builder.Append(")");
+            return builder.ToString();
         }
 
         string Parenthesize(string name, params Expr[] exprs)
@@ -438,6 +489,26 @@ namespace cslox
 
             builder.Append(")");
             return builder.ToString();
+        }
+
+        public string VisitBinary(Expr.Binary expr)
+        {
+            return Parenthesize(expr.Op.Lexeme, expr.Left, expr.Right);
+        }
+
+        public string VisitUnary(Expr.Unary expr)
+        {
+            return Parenthesize(expr.Op.Lexeme, expr.Right);
+        }
+
+        public string VisitLiteral(Expr.Literal expr)
+        {
+            return expr.Value.ToString();
+        }
+
+        public string VisitGrouping(Expr.Grouping expr)
+        {
+            return Parenthesize(expr.Inner);
         }
     }
 }
