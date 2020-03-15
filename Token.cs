@@ -26,7 +26,7 @@ namespace cslox
         EOF
     }
 
-    class Token
+    public class Token
     {
         private TokenType _type;
         private string _lexeme;
