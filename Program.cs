@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.Serialization;
+using System.Text;
 
 namespace cslox
 {
@@ -59,62 +58,6 @@ namespace cslox
             {
                 Console.WriteLine(token);
             }
-        }
-    }
-
-    internal class ErrorReporter : IErrorReporter
-    {
-        public void AddError(int line, string message)
-        {
-            Console.Error.WriteLine("{0}: {1}", line, message);
-            // TODO: hadError?
-        }
-    }
-
-    enum TokenType
-    {
-        // Single-character tokens
-        LeftParen, RightParen,
-        LeftBrace, RightBrace,
-        Comma, Dot,
-        Minus, Plus,
-        Semicolon,
-        Slash, Star,
-
-        // One *or* two character tokens
-        Bang, BangEqual,
-        Equal, EqualEqual,
-        Greater, GreaterEqual,
-        Less, LessEqual,
-
-        // Literals
-        Identifier, String, Number,
-
-        // Keywords
-        And, Class, Else, False, Fun, For, If, Nil, Or,
-        Print, Return, Super, This, True, Var, While,
-
-        EOF
-    }
-
-    class Token
-    {
-        private TokenType _type;
-        private string _lexeme;
-        private object _literal;
-        private int _line;
-
-        internal Token(TokenType type, string lexeme, object literal, int line)
-        {
-            _type = type;
-            _lexeme = lexeme;
-            _literal = literal;
-            _line = line;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}: {1} {2} {3}", _line, _type, _lexeme, _literal);
         }
     }
 
@@ -360,8 +303,141 @@ namespace cslox
         }
     }
 
+    internal class ErrorReporter : IErrorReporter
+    {
+        public void AddError(int line, string message)
+        {
+            Console.Error.WriteLine("{0}: {1}", line, message);
+            // TODO: hadError?
+        }
+    }
+
+    enum TokenType
+    {
+        // Single-character tokens
+        LeftParen, RightParen,
+        LeftBrace, RightBrace,
+        Comma, Dot,
+        Minus, Plus,
+        Semicolon,
+        Slash, Star,
+
+        // One *or* two character tokens
+        Bang, BangEqual,
+        Equal, EqualEqual,
+        Greater, GreaterEqual,
+        Less, LessEqual,
+
+        // Literals
+        Identifier, String, Number,
+
+        // Keywords
+        And, Class, Else, False, Fun, For, If, Nil, Or,
+        Print, Return, Super, This, True, Var, While,
+
+        EOF
+    }
+
+    class Token
+    {
+        private TokenType _type;
+        private string _lexeme;
+        private object _literal;
+        private int _line;
+
+        internal Token(TokenType type, string lexeme, object literal, int line)
+        {
+            _type = type;
+            _lexeme = lexeme;
+            _literal = literal;
+            _line = line;
+        }
+
+        public string Lexeme
+        {
+            get { return _lexeme; }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: {1} {2} {3}", _line, _type, _lexeme, _literal);
+        }
+    }
+
     internal interface IErrorReporter
     {
         void AddError(int line, string message);
+    }
+
+    abstract class Expr
+    {
+        public abstract TResult Accept<TResult>(IVisitor<TResult> visitor);
+
+
+        internal class Binary : Expr
+        {
+            public Binary(Expr left, Token op, Expr right)
+            {
+                Left = left;
+                Op = op;
+                Right = right;
+            }
+
+            public Expr Left { get; }
+            public Token Op { get; }
+            public Expr Right { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitBinary(this);
+            }
+        }
+
+        internal class Literal : Expr
+        {
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitLiteral(this);
+            }
+        }
+
+        internal interface IVisitor<TResult>
+        {
+            TResult VisitBinary(Expr.Binary expr);
+            TResult VisitLiteral(Expr.Literal expr);
+        }
+    }
+
+    class AstPrinter : Expr.IVisitor<string>
+    {
+        public string VisitBinary(Expr.Binary expr)
+        {
+            return Parenthesize(expr.Op.Lexeme, expr.Left, expr.Right);
+        }
+
+        public string VisitLiteral(Expr.Literal expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        string Print(Expr expr)
+        {
+            return expr.Accept(this);
+        }
+
+        string Parenthesize(string name, params Expr[] exprs)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append("(").Append(name);
+            foreach (var expr in exprs)
+            {
+                builder.Append(" ");
+                builder.Append(expr.Accept(this));
+            }
+
+            builder.Append(")");
+            return builder.ToString();
+        }
     }
 }
