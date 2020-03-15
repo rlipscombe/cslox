@@ -42,7 +42,7 @@ namespace cslox
             _errors = errors;
         }
 
-        internal IEnumerable<Token> ScanTokens()
+        internal List<Token> ScanTokens()
         {
             while (!IsEOF())
             {

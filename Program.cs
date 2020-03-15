@@ -7,16 +7,6 @@ namespace cslox
     {
         static int Main(string[] args)
         {
-            var expr = new Expr.Binary(
-                new Expr.Unary(
-                    new Token(TokenType.Minus, "-", null, 1),
-                    new Expr.Literal(123)),
-                new Token(TokenType.Star, "*", null, 1),
-                new Expr.Grouping(
-                    new Expr.Literal(45.67)));
-
-            Console.WriteLine(AstPrinter.Print(expr));
-
             if (args.Length > 1)
             {
                 Console.WriteLine("Usage: cslox [scriptfile]");
@@ -56,11 +46,10 @@ namespace cslox
             var errors = new ErrorReporter();
             var scanner = new Scanner(text, errors);
             var tokens = scanner.ScanTokens();
+            var parser = new Parser(tokens, errors);
+            var expr = parser.Parse();
 
-            foreach (var token in tokens)
-            {
-                Console.WriteLine(token);
-            }
+            Console.WriteLine(AstPrinter.Print(expr));
         }
     }
 
@@ -70,6 +59,14 @@ namespace cslox
         {
             Console.Error.WriteLine("{0}: {1}", line, message);
             // TODO: hadError?
+        }
+
+        public void AddError(Token token, string message)
+        {
+            if (token.Type == TokenType.EOF)
+                Console.Error.WriteLine("{0}: at end {1}", token.Line, message);
+            else
+                Console.Error.WriteLine("{0}: at '{1}' {2}", token.Line, token.Lexeme, message);
         }
     }
 }

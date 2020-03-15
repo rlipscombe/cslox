@@ -1,6 +1,6 @@
 namespace cslox
 {
-    enum TokenType
+    public enum TokenType
     {
         // Single-character tokens
         LeftParen, RightParen,
@@ -28,6 +28,7 @@ namespace cslox
 
     public class Token
     {
+        // TODO: These should be read-only properties.
         private TokenType _type;
         private string _lexeme;
         private object _literal;
@@ -41,9 +42,24 @@ namespace cslox
             _line = line;
         }
 
+        public TokenType Type
+        {
+            get { return _type; }
+        }
+
         public string Lexeme
         {
             get { return _lexeme; }
+        }
+
+        public object Literal
+        {
+            get { return _literal; }
+        }
+
+        public int Line
+        {
+            get { return _line; }
         }
 
         public override string ToString()
