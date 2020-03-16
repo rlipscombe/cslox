@@ -34,10 +34,28 @@ namespace cslox
             }
         }
 
+        public class Var : Stmt
+        {
+            public Var(Token name, Expr init)
+            {
+                Name = name;
+                Init = init;
+            }
+
+            public Token Name { get; }
+            public Expr Init { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitVarStmt(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitPrintStmt(Stmt.Print stmt);
             TResult VisitExpressionStmt(Stmt.Expression stmt);
+            TResult VisitVarStmt(Stmt.Var stmt);
         }
     }
 }

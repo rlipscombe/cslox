@@ -70,12 +70,28 @@ namespace cslox
             }
         }
 
+        public class Variable : Expr
+        {
+            public Variable(Token name)
+            {
+                Name = name;
+            }
+
+            public Token Name { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitVariable(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitBinary(Binary expr);
             TResult VisitUnary(Unary expr);
             TResult VisitLiteral(Literal expr);
             TResult VisitGrouping(Grouping expr);
+            TResult VisitVariable(Variable expr);
         }
     }
 }

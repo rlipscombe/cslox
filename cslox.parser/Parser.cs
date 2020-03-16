@@ -16,16 +16,48 @@ namespace cslox
             _errors = errors;
         }
 
-        // program :: statement* EOF
+        // program :: declaration* EOF
         public List<Stmt> Parse()
         {
             var statements = new List<Stmt>();
             while (!IsEOF())
             {
-                statements.Add(Statement());
+                statements.Add(Declaration());
             }
 
             return statements;
+        }
+
+        // declaration :: varDecl | statement ;
+        private Stmt Declaration()
+        {
+            try
+            {
+                if (MatchAny(TokenType.Var))
+                    return VarDeclaration();
+
+                return Statement();
+            }
+            catch (ParseError err)
+            {
+                Synchronize();
+                return null;
+            }
+        }
+
+        // varDecl :: "var" IDENTIFIER ( "=" expression )? ";" ;
+        private Stmt VarDeclaration()
+        {
+            var name = Consume(TokenType.Identifier, "Expect variable name");
+
+            Expr init = null;
+            if (MatchAny(TokenType.Equal))
+            {
+                init = Expression();
+            }
+
+            Consume(TokenType.Semicolon, "Expect ';' after variable declaration");
+            return new Stmt.Var(name, init);
         }
 
         // statement :: exprStmt | printStmt ;
@@ -109,7 +141,7 @@ namespace cslox
             return Primary();
         }
 
-        // primary :: NUM | STR | "false" | "true" | "nil" | "(" expression ")" ;
+        // primary :: "false" | "true" | "nil" | NUM | STR | IDENTIFIER | "(" expression ")" ;
         private Expr Primary()
         {
             if (MatchAny(TokenType.False)) return new Expr.Literal(false);
@@ -119,6 +151,11 @@ namespace cslox
             if (MatchAny(TokenType.Number, TokenType.String))
             {
                 return new Expr.Literal(Previous().Literal);
+            }
+
+            if (MatchAny(TokenType.Identifier))
+            {
+                return new Expr.Variable(Previous());
             }
 
             if (MatchAny(TokenType.LeftParen))
@@ -183,6 +220,32 @@ namespace cslox
 
             _errors.AddParserError(Peek(), message);
             throw new ParseError();
+        }
+
+        private void Synchronize()
+        {
+            Advance();
+
+            while (!IsEOF())
+            {
+                if (Previous().Type == TokenType.Semicolon)
+                    return;
+
+                switch (Peek().Type)
+                {
+                    case TokenType.Class:
+                    case TokenType.Fun:
+                    case TokenType.Var:
+                    case TokenType.For:
+                    case TokenType.If:
+                    case TokenType.While:
+                    case TokenType.Print:
+                    case TokenType.Return:
+                        return;
+                }
+
+                Advance();
+            }
         }
     }
 }

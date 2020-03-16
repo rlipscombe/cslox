@@ -27,8 +27,9 @@ namespace cslox
         {
             var text = File.ReadAllText(path);
 
+            var environment = new Environment();
             var errors = new ErrorReporter();
-            Run(text, errors);
+            Run(text, environment, errors);
             if (errors.HadError)
                 return 65;
             if (errors.HadRuntimeError)
@@ -38,16 +39,17 @@ namespace cslox
 
         static void RunPrompt()
         {
+            var environment = new Environment();
             for (; ; )
             {
                 Console.Write("> ");
                 var text = Console.ReadLine();
                 var errors = new ErrorReporter();
-                Run(text, errors);
+                Run(text, environment, errors);
             }
         }
 
-        static void Run(string text, IErrorReporter errors)
+        static void Run(string text, Environment environment, IErrorReporter errors)
         {
             var scanner = new Scanner(text, errors);
             var tokens = scanner.ScanTokens();
@@ -56,8 +58,7 @@ namespace cslox
 
             Console.WriteLine(ProgramPrinter.Print(program));
 
-            // TODO: For persisting variables in the REPL, we'll need a single instance of this.
-            var interpreter = new Interpreter(errors);
+            var interpreter = new Interpreter(environment, errors);
             interpreter.Interpret(program);
         }
     }

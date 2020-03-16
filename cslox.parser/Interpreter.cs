@@ -8,12 +8,33 @@ namespace cslox
         public static Unit Default { get { return null; } }
     }
 
+    public class Environment
+    {
+        private Dictionary<string, object> _values = new Dictionary<string, object>();
+
+        internal object Get(Token name)
+        {
+            object value;
+            if (_values.TryGetValue(name.Lexeme, out value))
+                return value;
+
+            throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'");
+        }
+
+        internal void Set(string name, object value)
+        {
+            _values.Add(name, value);
+        }
+    }
+
     public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<Unit>
     {
+        private Environment _environment;
         private IErrorReporter _errors;
 
-        public Interpreter(IErrorReporter errors)
+        public Interpreter(Environment environment, IErrorReporter errors)
         {
+            _environment = environment;
             _errors = errors;
         }
 
@@ -176,6 +197,23 @@ namespace cslox
         public Unit VisitExpressionStmt(Stmt.Expression stmt)
         {
             Evaluate(stmt.Value);
+            return Unit.Default;
+        }
+
+        public object VisitVariable(Expr.Variable expr)
+        {
+            return _environment.Get(expr.Name);
+        }
+
+        public Unit VisitVarStmt(Stmt.Var stmt)
+        {
+            object value = null;
+            if (stmt.Init != null)
+            {
+                value = Evaluate(stmt.Init);
+            }
+
+            _environment.Set(stmt.Name.Lexeme, value);
             return Unit.Default;
         }
     }

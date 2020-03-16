@@ -47,6 +47,21 @@ namespace cslox
             return builder.ToString();
         }
 
+        string Parenthesize(string name, string name2, params Expr[] exprs)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append("(").Append(name).Append(" ").Append(name2);
+            foreach (var expr in exprs)
+            {
+                builder.Append(" ");
+                builder.Append(expr.Accept(this));
+            }
+
+            builder.Append(")");
+            return builder.ToString();
+        }
+
         public string VisitBinary(Expr.Binary expr)
         {
             return Parenthesize(expr.Op.Lexeme, expr.Left, expr.Right);
@@ -75,6 +90,16 @@ namespace cslox
         public string VisitExpressionStmt(Stmt.Expression stmt)
         {
             return stmt.Value.Accept(this);
+        }
+
+        public string VisitVariable(Expr.Variable expr)
+        {
+            return expr.Name.Lexeme;
+        }
+
+        public string VisitVarStmt(Stmt.Var stmt)
+        {
+            return Parenthesize("var", stmt.Name.Lexeme, stmt.Init);
         }
     }
 }
