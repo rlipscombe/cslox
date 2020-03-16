@@ -10,13 +10,27 @@ namespace cslox
 
     public class Environment
     {
+        private Environment _enclosing;
         private Dictionary<string, object> _values = new Dictionary<string, object>();
+
+        public Environment()
+        {
+            _enclosing = null;
+        }
+
+        public Environment(Environment enclosing)
+        {
+            _enclosing = enclosing;
+        }
 
         internal object Get(Token name)
         {
             object value;
             if (_values.TryGetValue(name.Lexeme, out value))
                 return value;
+
+            if (_enclosing != null)
+                return _enclosing.Get(name);
 
             throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'");
         }
@@ -28,10 +42,20 @@ namespace cslox
 
         internal void Assign(Token name, object value)
         {
+            if (_values.ContainsKey(name.Lexeme))
+            {
+                _values[name.Lexeme] = value;
+                return;
+            }
+
+            if (_enclosing != null)
+            {
+                _enclosing.Assign(name, value);
+                return;
+            }
+
             if (!_values.ContainsKey(name.Lexeme))
                 throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'");
-
-            _values[name.Lexeme] = value;
         }
     }
 
@@ -232,6 +256,30 @@ namespace cslox
 
             _environment.Assign(expr.Name, value);
             return value;
+        }
+
+        public Unit VisitBlockStmt(Stmt.Block stmt)
+        {
+            ExecuteBlock(stmt.Statements, new Environment(_environment));
+            return Unit.Default;
+        }
+
+        private void ExecuteBlock(List<Stmt> statements, Environment environment)
+        {
+            var previous = _environment;
+            try
+            {
+                _environment = environment;
+
+                foreach (var stmt in statements)
+                {
+                    Execute(stmt);
+                }
+            }
+            finally
+            {
+                _environment = previous;
+            }
         }
     }
 }

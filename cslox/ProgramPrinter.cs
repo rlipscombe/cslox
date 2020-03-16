@@ -107,5 +107,19 @@ namespace cslox
         {
             return Parenthesize("set", expr.Name.Lexeme, expr.Value);
         }
+
+        public string VisitBlockStmt(Stmt.Block stmt)
+        {
+            var builder = new StringBuilder();
+            builder.Append("(block ");
+
+            foreach (var s in stmt.Statements)
+            {
+                builder.Append(s.Accept(this));
+            }
+
+            builder.Append(")");
+            return builder.ToString();
+        }
     }
 }

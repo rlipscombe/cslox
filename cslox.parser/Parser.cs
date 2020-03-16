@@ -60,13 +60,22 @@ namespace cslox
             return new Stmt.Var(name, init);
         }
 
-        // statement :: exprStmt | printStmt ;
+        // statement :: exprStmt | printStmt | block ;
         private Stmt Statement()
         {
             if (MatchAny(TokenType.Print))
                 return PrintStatement();
+            if (MatchAny(TokenType.LeftBrace))
+                return BlockStatement();
 
             return ExpressionStatement();
+        }
+
+        private Stmt ExpressionStatement()
+        {
+            var expr = Expression();
+            Consume(TokenType.Semicolon, "Expect ';' after expression");
+            return new Stmt.Expression(expr);
         }
 
         private Stmt PrintStatement()
@@ -76,11 +85,18 @@ namespace cslox
             return new Stmt.Print(expr);
         }
 
-        private Stmt ExpressionStatement()
+        // block :: "{" declaration* "}" ;
+        private Stmt BlockStatement()
         {
-            var expr = Expression();
-            Consume(TokenType.Semicolon, "Expect ';' after expression");
-            return new Stmt.Expression(expr);
+            var statements = new List<Stmt>();
+
+            while (!Check(TokenType.RightBrace) && !IsEOF())
+            {
+                statements.Add(Declaration());
+            }
+
+            Consume(TokenType.RightBrace, "Expect '}' after block");
+            return new Stmt.Block(statements);
         }
 
         // expression :: assignment ;

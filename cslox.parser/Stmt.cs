@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace cslox
 {
     public abstract class Stmt
@@ -51,11 +53,27 @@ namespace cslox
             }
         }
 
+        public class Block : Stmt
+        {
+            public Block(List<Stmt> statements)
+            {
+                Statements = statements;
+            }
+
+            public List<Stmt> Statements { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitBlockStmt(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitPrintStmt(Stmt.Print stmt);
             TResult VisitExpressionStmt(Stmt.Expression stmt);
             TResult VisitVarStmt(Stmt.Var stmt);
+            TResult VisitBlockStmt(Stmt.Block stmt);
         }
     }
 }
