@@ -50,7 +50,7 @@ namespace cslox
         {
             var name = Consume(TokenType.Identifier, "Expect variable name");
 
-            Expr init = null;
+            Expr init = new Expr.Literal(null);
             if (MatchAny(TokenType.Equal))
             {
                 init = Expression();
