@@ -34,7 +34,7 @@ namespace cslox
         private object _literal;
         private int _line;
 
-        internal Token(TokenType type, string lexeme, object literal, int line)
+        public Token(TokenType type, string lexeme, object literal, int line)
         {
             _type = type;
             _lexeme = lexeme;
@@ -64,7 +64,9 @@ namespace cslox
 
         public override string ToString()
         {
-            return string.Format("{0}: {1} {2} {3}", _line, _type, _lexeme, _literal);
+            return
+                string.Format("Token {{ line = {0}, type = {1}, lexeme = \"{2}\", literal = {3} }}",
+                                _line, _type, _lexeme, _literal);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace cslox
 
                 return Statement();
             }
-            catch (ParseError err)
+            catch (ParseError)
             {
                 Synchronize();
                 return null;
@@ -83,10 +83,32 @@ namespace cslox
             return new Stmt.Expression(expr);
         }
 
-        // expression :: equality
+        // expression :: assignment ;
         private Expr Expression()
         {
-            return Equality();
+            return Assignment();
+        }
+
+        // assignment :: IDENTIFIER "=" assignment | equality ;
+        private Expr Assignment()
+        {
+            var expr = Equality();
+
+            if (MatchAny(TokenType.Equal))
+            {
+                var equals = Previous();
+                var value = Assignment();
+
+                if (expr is Expr.Variable)
+                {
+                    var name = ((Expr.Variable)expr).Name;
+                    return new Expr.Assign(name, value);
+                }
+
+                _errors.AddParserError(equals, "Invalid assignment target");
+            }
+
+            return expr;
         }
 
         private Expr LeftBinary(Func<Expr> leftP, TokenType[] tokens, Func<Expr> rightP)

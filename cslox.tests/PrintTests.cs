@@ -8,16 +8,11 @@ namespace cslox.tests
     {
         class CaptureErrors : IErrorReporter
         {
-            private List<string> _errors = new List<string>();
+            private List<string> _errors;
 
-            public void AddParserError(Token token, string message)
+            public CaptureErrors(List<string> errors)
             {
-                _errors.Add(string.Format("parser: {0} {1}", token, message));
-            }
-
-            public void AddRuntimeError(RuntimeError err)
-            {
-                throw new NotImplementedException();
+                _errors = errors;
             }
 
             public void AddScannerError(int line, string message)
@@ -25,41 +20,47 @@ namespace cslox.tests
                 throw new NotImplementedException();
             }
 
-            public List<string> ToList()
+            public void AddParserError(Token token, string message)
             {
-                return _errors;
+                _errors.Add(string.Format("parser: {0}: {1}", token.Line, message));
+            }
+
+            public void AddRuntimeError(RuntimeError err)
+            {
+                throw new NotImplementedException();
             }
         }
 
         private List<string> Run(string source)
         {
-            var errors = new CaptureErrors();
+            var errors = new List<string>();
+            var capture = new CaptureErrors(errors);
 
-            var scanner = new Scanner(source, errors);
+            var scanner = new Scanner(source, capture);
             var tokens = scanner.ScanTokens();
-            var parser = new Parser(tokens, errors);
+            var parser = new Parser(tokens, capture);
             List<Stmt> program = new List<Stmt>();
             try
             {
                 program = parser.Parse();
             }
-            catch (ParseError)
+            catch (ParseError e)
             {
-                // TODO?
+                errors.Add(e.ToString());
             }
 
             var environment = new Environment();
-            var interpreter = new Interpreter(environment, errors);
+            var interpreter = new Interpreter(environment, capture);
             try
             {
                 interpreter.Interpret(program);
             }
-            catch (RuntimeError)
+            catch (RuntimeError e)
             {
-                // TODO: Capture this too?
+                errors.Add(e.ToString());
             }
 
-            return errors.ToList();
+            return errors;
         }
 
         [Fact]
@@ -74,7 +75,15 @@ namespace cslox.tests
         public void PrintMissingSemicolon()
         {
             var source = @"print 1+2";
-            Assert.Contains("parser: 1: EOF   Expect ';' after value", Run(source));
+            Assert.Contains("parser: 1: Expect ';' after value", Run(source));
+        }
+
+        [Fact]
+        public void AssignmentInPrint()
+        {
+            var source = @"var a = 1;
+            print a = 2;";
+            Assert.Empty(Run(source));
         }
     }
 }

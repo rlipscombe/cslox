@@ -16,7 +16,8 @@ namespace cslox
             var builder = new StringBuilder();
             foreach (var stmt in program)
             {
-                builder.Append(stmt.Accept(this));
+                if (stmt != null)
+                    builder.Append(stmt.Accept(this));
             }
 
             return builder.ToString();
@@ -100,6 +101,11 @@ namespace cslox
         public string VisitVarStmt(Stmt.Var stmt)
         {
             return Parenthesize("var", stmt.Name.Lexeme, stmt.Init);
+        }
+
+        public string VisitAssign(Expr.Assign expr)
+        {
+            return Parenthesize("set", expr.Name.Lexeme, expr.Value);
         }
     }
 }

@@ -85,6 +85,23 @@ namespace cslox
             }
         }
 
+        public class Assign : Expr
+        {
+            public Assign(Token name, Expr value)
+            {
+                Name = name;
+                Value = value;
+            }
+
+            public Token Name { get; }
+            public Expr Value { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitAssign(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitBinary(Binary expr);
@@ -92,6 +109,7 @@ namespace cslox
             TResult VisitLiteral(Literal expr);
             TResult VisitGrouping(Grouping expr);
             TResult VisitVariable(Variable expr);
+            TResult VisitAssign(Assign expr);
         }
     }
 }

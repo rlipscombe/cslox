@@ -21,9 +21,17 @@ namespace cslox
             throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'");
         }
 
-        internal void Set(string name, object value)
+        internal void Define(string name, object value)
         {
             _values.Add(name, value);
+        }
+
+        internal void Assign(Token name, object value)
+        {
+            if (!_values.ContainsKey(name.Lexeme))
+                throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'");
+
+            _values[name.Lexeme] = value;
         }
     }
 
@@ -44,7 +52,8 @@ namespace cslox
             {
                 foreach (var stmt in statements)
                 {
-                    Execute(stmt);
+                    if (stmt != null)
+                        Execute(stmt);
                 }
             }
             catch (RuntimeError err)
@@ -213,8 +222,16 @@ namespace cslox
                 value = Evaluate(stmt.Init);
             }
 
-            _environment.Set(stmt.Name.Lexeme, value);
+            _environment.Define(stmt.Name.Lexeme, value);
             return Unit.Default;
+        }
+
+        public object VisitAssign(Expr.Assign expr)
+        {
+            var value = Evaluate(expr.Value);
+
+            _environment.Assign(expr.Name, value);
+            return value;
         }
     }
 }
