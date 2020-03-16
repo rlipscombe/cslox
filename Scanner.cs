@@ -123,7 +123,7 @@ namespace cslox
                     {
                         // Don't throw exceptions for the error, because
                         // we want to keep going if possible.
-                        _errors.AddError(_line, "Unexpected character");
+                        _errors.AddScannerError(_line, "Unexpected character");
                     }
                     break;
             }
@@ -173,7 +173,7 @@ namespace cslox
 
             if (IsEOF())
             {
-                _errors.AddError(_line, "Unterminated string");
+                _errors.AddScannerError(_line, "Unterminated string");
                 return;
             }
 

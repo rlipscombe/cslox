@@ -14,8 +14,7 @@ namespace cslox
             }
             else if (args.Length == 1)
             {
-                RunFile(args[0]);
-                return 0;
+                return RunFile(args[0]);
             }
             else
             {
@@ -24,10 +23,17 @@ namespace cslox
             }
         }
 
-        static void RunFile(string path)
+        static int RunFile(string path)
         {
             var text = File.ReadAllText(path);
-            Run(text);
+
+            var errors = new ErrorReporter();
+            Run(text, errors);
+            if (errors.HadError)
+                return 65;
+            if (errors.HadRuntimeError)
+                return 70;
+            return 0;
         }
 
         static void RunPrompt()
@@ -36,37 +42,50 @@ namespace cslox
             {
                 Console.Write("> ");
                 var text = Console.ReadLine();
-                Run(text);
+                var errors = new ErrorReporter();
+                Run(text, errors);
             }
         }
 
-        static void Run(string text)
+        static void Run(string text, IErrorReporter errors)
         {
-            // TODO: Does this get passed in? Where *do* we abort the run?
-            var errors = new ErrorReporter();
             var scanner = new Scanner(text, errors);
             var tokens = scanner.ScanTokens();
             var parser = new Parser(tokens, errors);
             var expr = parser.Parse();
 
             Console.WriteLine(AstPrinter.Print(expr));
+
+            // TODO: For persisting variables in the REPL, we'll need a single instance of this.
+            var interpreter = new Interpreter(errors);
+            interpreter.Interpret(expr);
         }
     }
 
     internal class ErrorReporter : IErrorReporter
     {
-        public void AddError(int line, string message)
+        public bool HadError { get; internal set; }
+        public bool HadRuntimeError { get; internal set; }
+
+        public void AddScannerError(int line, string message)
         {
             Console.Error.WriteLine("{0}: {1}", line, message);
-            // TODO: hadError?
+            HadError = true;
         }
 
-        public void AddError(Token token, string message)
+        public void AddParserError(Token token, string message)
         {
             if (token.Type == TokenType.EOF)
                 Console.Error.WriteLine("{0}: at end {1}", token.Line, message);
             else
                 Console.Error.WriteLine("{0}: at '{1}' {2}", token.Line, token.Lexeme, message);
+            HadError = true;
+        }
+
+        public void AddRuntimeError(RuntimeError err)
+        {
+            Console.Error.WriteLine("{0}: {1}", err.Op.Line, err.Message);
+            HadRuntimeError = true;
         }
     }
 }

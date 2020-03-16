@@ -98,8 +98,8 @@ namespace cslox
                 return new Expr.Grouping(expr);
             }
 
-            _errors.AddError(Peek(), "Expect expression");
-            throw new ParseException();
+            _errors.AddParserError(Peek(), "Expect expression");
+            throw new ParseError();
         }
 
         private bool MatchAny(params TokenType[] types)
@@ -151,8 +151,8 @@ namespace cslox
             if (Check(type))
                 return Advance();
 
-            _errors.AddError(Peek(), message);
-            throw new ParseException();
+            _errors.AddParserError(Peek(), message);
+            throw new ParseError();
         }
     }
 }
