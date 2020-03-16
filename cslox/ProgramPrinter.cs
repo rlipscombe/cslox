@@ -75,7 +75,7 @@ namespace cslox
 
         public string VisitLiteral(Expr.Literal expr)
         {
-            return expr.Value.ToString();
+            return expr.Value != null ? expr.Value.ToString() : "nil";
         }
 
         public string VisitGrouping(Expr.Grouping expr)
