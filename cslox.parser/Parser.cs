@@ -60,9 +60,11 @@ namespace cslox
             return new Stmt.Var(name, init);
         }
 
-        // statement :: exprStmt | printStmt | block ;
+        // statement :: exprStmt | ifStmt | printStmt | block ;
         private Stmt Statement()
         {
+            if (MatchAny(TokenType.If))
+                return IfStatement();
             if (MatchAny(TokenType.Print))
                 return PrintStatement();
             if (MatchAny(TokenType.LeftBrace))
@@ -76,6 +78,23 @@ namespace cslox
             var expr = Expression();
             Consume(TokenType.Semicolon, "Expect ';' after expression");
             return new Stmt.Expression(expr);
+        }
+
+        // ifStmt :: "if" "(" expression ")" statement ( "else" statement )? ;
+        private Stmt IfStatement()
+        {
+            Consume(TokenType.LeftParen, "Expect '(' after 'if'");
+            var condition = Expression();
+            Consume(TokenType.RightParen, "Expect ')' after if condition");
+
+            var thenBranch = Statement();
+            Stmt elseBranch = null;
+            if (MatchAny(TokenType.Else))
+            {
+                elseBranch = Statement();
+            }
+
+            return new Stmt.If(condition, thenBranch, elseBranch);
         }
 
         private Stmt PrintStatement()

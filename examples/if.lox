@@ -1,0 +1,5 @@
+var x = 4;
+if (x < 5) {
+    print "Less";
+}
+else print "More";

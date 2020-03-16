@@ -121,5 +121,19 @@ namespace cslox
             builder.Append(")");
             return builder.ToString();
         }
+
+        public string VisitIfStmt(Stmt.If stmt)
+        {
+            var builder = new StringBuilder();
+            builder.Append("(if ");
+            builder.Append(stmt.Condition.Accept(this));
+
+            builder.Append(stmt.Then.Accept(this));
+            if (stmt.Else != null)
+                builder.Append(stmt.Else.Accept(this));
+
+            builder.Append(")");
+            return builder.ToString();
+        }
     }
 }

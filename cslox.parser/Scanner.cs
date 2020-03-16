@@ -19,8 +19,8 @@ namespace cslox
         static Scanner()
         {
             _keywords.Add("and", TokenType.And);
-            _keywords.Add("class", TokenType.And);
-            _keywords.Add("else", TokenType.And);
+            _keywords.Add("class", TokenType.Class);
+            _keywords.Add("else", TokenType.Else);
             _keywords.Add("false", TokenType.False);
             _keywords.Add("for", TokenType.For);
             _keywords.Add("fun", TokenType.Fun);

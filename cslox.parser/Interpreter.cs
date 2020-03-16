@@ -281,5 +281,22 @@ namespace cslox
                 _environment = previous;
             }
         }
+
+        public Unit VisitIfStmt(Stmt.If stmt)
+        {
+            if (IsTruthy(Evaluate(stmt.Condition)))
+            {
+                Execute(stmt.Then);
+            }
+            else
+            {
+                if (stmt.Else != null)
+                {
+                    Execute(stmt.Else);
+                }
+            }
+
+            return Unit.Default;
+        }
     }
 }

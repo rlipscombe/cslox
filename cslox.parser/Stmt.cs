@@ -68,12 +68,32 @@ namespace cslox
             }
         }
 
+        public class If : Stmt
+        {
+            public If(Expr condition, Stmt thenBranch, Stmt elseBranch)
+            {
+                Condition = condition;
+                Then = thenBranch;
+                Else = elseBranch;
+            }
+
+            public Expr Condition { get; }
+            public Stmt Then { get; }
+            public Stmt Else { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitIfStmt(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitPrintStmt(Stmt.Print stmt);
             TResult VisitExpressionStmt(Stmt.Expression stmt);
             TResult VisitVarStmt(Stmt.Var stmt);
             TResult VisitBlockStmt(Stmt.Block stmt);
+            TResult VisitIfStmt(Stmt.If stmt);
         }
     }
 }
