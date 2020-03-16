@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cslox.tests", "cslox.tests\cslox.tests.csproj", "{351CC8E9-AE76-42E1-B9C1-35A1671B144B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cslox.parser", "cslox.parser\cslox.parser.csproj", "{F3F3E7CA-0AC1-4031-9635-8F0CAF846BC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cslox", "cslox\cslox.csproj", "{4AE563BB-36E8-4256-9553-B752BE740ADD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{981611F2-1B07-43C1-A0E8-5E5B09B34FF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{981611F2-1B07-43C1-A0E8-5E5B09B34FF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{981611F2-1B07-43C1-A0E8-5E5B09B34FF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{981611F2-1B07-43C1-A0E8-5E5B09B34FF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{351CC8E9-AE76-42E1-B9C1-35A1671B144B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{351CC8E9-AE76-42E1-B9C1-35A1671B144B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{351CC8E9-AE76-42E1-B9C1-35A1671B144B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{351CC8E9-AE76-42E1-B9C1-35A1671B144B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3F3E7CA-0AC1-4031-9635-8F0CAF846BC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3F3E7CA-0AC1-4031-9635-8F0CAF846BC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3F3E7CA-0AC1-4031-9635-8F0CAF846BC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3F3E7CA-0AC1-4031-9635-8F0CAF846BC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AE563BB-36E8-4256-9553-B752BE740ADD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AE563BB-36E8-4256-9553-B752BE740ADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AE563BB-36E8-4256-9553-B752BE740ADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AE563BB-36E8-4256-9553-B752BE740ADD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

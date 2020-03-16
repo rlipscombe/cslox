@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace cslox
 {
-    class Scanner
+    public class Scanner
     {
         private string _source;
         private IErrorReporter _errors;
@@ -36,13 +36,13 @@ namespace cslox
             _keywords.Add("while", TokenType.While);
         }
 
-        internal Scanner(string source, IErrorReporter errors)
+        public Scanner(string source, IErrorReporter errors)
         {
             _source = source;
             _errors = errors;
         }
 
-        internal List<Token> ScanTokens()
+        public List<Token> ScanTokens()
         {
             while (!IsEOF())
             {
