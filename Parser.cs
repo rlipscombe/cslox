@@ -16,9 +16,39 @@ namespace cslox
             _errors = errors;
         }
 
-        public Expr Parse()
+        // program :: statement* EOF
+        public List<Stmt> Parse()
         {
-            return Expression();
+            var statements = new List<Stmt>();
+            while (!IsEOF())
+            {
+                statements.Add(Statement());
+            }
+
+            return statements;
+        }
+
+        // statement :: exprStmt | printStmt ;
+        private Stmt Statement()
+        {
+            if (MatchAny(TokenType.Print))
+                return PrintStatement();
+
+            return ExpressionStatement();
+        }
+
+        private Stmt PrintStatement()
+        {
+            var expr = Expression();
+            Consume(TokenType.Semicolon, "Expect ';' after value");
+            return new Stmt.Print(expr);
+        }
+
+        private Stmt ExpressionStatement()
+        {
+            var expr = Expression();
+            Consume(TokenType.Semicolon, "Expect ';' after expression");
+            return new Stmt.Expression(expr);
         }
 
         // expression :: equality

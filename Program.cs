@@ -52,13 +52,13 @@ namespace cslox
             var scanner = new Scanner(text, errors);
             var tokens = scanner.ScanTokens();
             var parser = new Parser(tokens, errors);
-            var expr = parser.Parse();
+            var program = parser.Parse();
 
-            Console.WriteLine(AstPrinter.Print(expr));
+            Console.WriteLine(ProgramPrinter.Print(program));
 
             // TODO: For persisting variables in the REPL, we'll need a single instance of this.
             var interpreter = new Interpreter(errors);
-            interpreter.Interpret(expr);
+            interpreter.Interpret(program);
         }
     }
 

@@ -1,18 +1,25 @@
+using System.Collections.Generic;
 using System.Text;
 
 namespace cslox
 {
-    public class AstPrinter : Expr.IVisitor<string>
+    public class ProgramPrinter : Expr.IVisitor<string>, Stmt.IVisitor<string>
     {
-        public static string Print(Expr expr)
+        public static string Print(List<Stmt> program)
         {
-            var printer = new AstPrinter();
-            return printer.PrintInner(expr);
+            var printer = new ProgramPrinter();
+            return printer.PrintInner(program);
         }
 
-        string PrintInner(Expr expr)
+        private string PrintInner(List<Stmt> program)
         {
-            return expr.Accept(this);
+            var builder = new StringBuilder();
+            foreach (var stmt in program)
+            {
+                builder.Append(stmt.Accept(this));
+            }
+
+            return builder.ToString();
         }
 
         string Parenthesize(Expr expr)
@@ -58,6 +65,16 @@ namespace cslox
         public string VisitGrouping(Expr.Grouping expr)
         {
             return Parenthesize(expr.Inner);
+        }
+
+        public string VisitPrintStmt(Stmt.Print stmt)
+        {
+            return Parenthesize("print", stmt.Value);
+        }
+
+        public string VisitExpressionStmt(Stmt.Expression stmt)
+        {
+            return stmt.Value.Accept(this);
         }
     }
 }

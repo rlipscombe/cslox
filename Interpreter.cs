@@ -1,8 +1,14 @@
 using System;
+using System.Collections.Generic;
 
 namespace cslox
 {
-    public class Interpreter : Expr.IVisitor<object>
+    public class Unit
+    {
+        public static Unit Default { get { return null; } }
+    }
+
+    public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<Unit>
     {
         private IErrorReporter _errors;
 
@@ -11,17 +17,24 @@ namespace cslox
             _errors = errors;
         }
 
-        public void Interpret(Expr expr)
+        public void Interpret(List<Stmt> statements)
         {
             try
             {
-                object result = Evaluate(expr);
-                Console.WriteLine(Stringify(result));
+                foreach (var stmt in statements)
+                {
+                    Execute(stmt);
+                }
             }
             catch (RuntimeError err)
             {
                 _errors.AddRuntimeError(err);
             }
+        }
+
+        private void Execute(Stmt stmt)
+        {
+            stmt.Accept(this);
         }
 
         private object Evaluate(Expr expr)
@@ -151,6 +164,19 @@ namespace cslox
                 return "nil";
 
             return value.ToString();
+        }
+
+        public Unit VisitPrintStmt(Stmt.Print stmt)
+        {
+            var value = Evaluate(stmt.Value);
+            Console.WriteLine(Stringify(value));
+            return Unit.Default;
+        }
+
+        public Unit VisitExpressionStmt(Stmt.Expression stmt)
+        {
+            Evaluate(stmt.Value);
+            return Unit.Default;
         }
     }
 }
