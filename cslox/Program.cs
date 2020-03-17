@@ -28,6 +28,8 @@ namespace cslox
             var text = File.ReadAllText(path);
 
             var environment = new Environment();
+            Globals.Register(environment);
+
             var errors = new ErrorReporter(path);
             Run(text, environment, errors);
             if (errors.HadError)
