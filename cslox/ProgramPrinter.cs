@@ -156,5 +156,20 @@ namespace cslox
 
             throw new NotSupportedException();
         }
+
+        public string VisitCall(Expr.Call call)
+        {
+            var builder = new StringBuilder();
+            builder.Append("(call ");
+            builder.Append(call.Callee.Accept(this));
+            foreach (var arg in call.Arguments)
+            {
+                builder.Append(" ");
+                builder.Append(arg.Accept(this));
+            }
+
+            builder.Append(")");
+            return builder.ToString();
+        }
     }
 }
