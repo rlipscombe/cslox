@@ -87,6 +87,23 @@ namespace cslox
             }
         }
 
+        public class While : Stmt
+        {
+            public While(Expr condition, Stmt body)
+            {
+                Condition = condition;
+                Body = body;
+            }
+
+            public Expr Condition { get; }
+            public Stmt Body { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitWhileStmt(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitPrintStmt(Stmt.Print stmt);
@@ -94,6 +111,7 @@ namespace cslox
             TResult VisitVarStmt(Stmt.Var stmt);
             TResult VisitBlockStmt(Stmt.Block stmt);
             TResult VisitIfStmt(Stmt.If stmt);
+            TResult VisitWhileStmt(Stmt.While stmt);
         }
     }
 }

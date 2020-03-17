@@ -1,0 +1,6 @@
+for (var i = 0; i < 3; i = i + 1)
+{
+    print i;
+}
+
+//print i; -- doesn't survive the 'for' scope. That's different than, e.g., C# 1.x, I think.

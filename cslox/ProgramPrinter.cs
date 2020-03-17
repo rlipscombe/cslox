@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -134,6 +135,26 @@ namespace cslox
 
             builder.Append(")");
             return builder.ToString();
+        }
+
+        public string VisitWhileStmt(Stmt.While stmt)
+        {
+            var builder = new StringBuilder();
+            builder.Append("(while ");
+            builder.Append(stmt.Condition.Accept(this));
+            builder.Append(stmt.Body.Accept(this));
+            builder.Append(")");
+            return builder.ToString();
+        }
+
+        public string VisitLogical(Expr.Logical logical)
+        {
+            if (logical.Op.Type == TokenType.Or)
+                return Parenthesize("or", logical.Left, logical.Right);
+            else if (logical.Op.Type == TokenType.And)
+                return Parenthesize("and", logical.Left, logical.Right);
+
+            throw new NotSupportedException();
         }
     }
 }

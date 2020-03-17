@@ -147,6 +147,29 @@ namespace cslox
             throw new NotSupportedException();
         }
 
+        public object VisitLogical(Expr.Logical expr)
+        {
+            // We always evaluate the left expression.
+            var left = Evaluate(expr.Left);
+
+            if (expr.Op.Type == TokenType.Or)
+            {
+                // For 'or', we can short-circuit if the left is truthy.
+                if (IsTruthy(left))
+                    return left;
+            }
+            else if (expr.Op.Type == TokenType.And)
+            {
+                // For 'and', we can short-circuit if the left is falsy.
+                if (!IsTruthy(left))
+                    return left;
+            }
+
+            // Returning the truthy (or falsy) value, rather than strict
+            // 'true' or 'false' allow us to do 'var x = y or default;'
+            return Evaluate(expr.Right);
+        }
+
         public object VisitGrouping(Expr.Grouping expr)
         {
             return Evaluate(expr.Inner);
@@ -294,6 +317,16 @@ namespace cslox
                 {
                     Execute(stmt.Else);
                 }
+            }
+
+            return Unit.Default;
+        }
+
+        public Unit VisitWhileStmt(Stmt.While stmt)
+        {
+            while (IsTruthy(Evaluate(stmt.Condition)))
+            {
+                Execute(stmt.Body);
             }
 
             return Unit.Default;

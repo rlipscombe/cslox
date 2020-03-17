@@ -1,0 +1,8 @@
+var a = 1;
+var b = 2;
+
+var i = 0;
+while (i < a + b) {
+    print i;
+    i = i + 1;
+}

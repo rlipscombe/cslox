@@ -40,6 +40,25 @@ namespace cslox
             }
         }
 
+        public class Logical : Expr
+        {
+            public Logical(Expr left, Token op, Expr right)
+            {
+                Left = left;
+                Op = op;
+                Right = right;
+            }
+
+            public Expr Left { get; }
+            public Token Op { get; }
+            public Expr Right { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitLogical(this);
+            }
+        }
+
         public class Literal : Expr
         {
             public Literal(object value)
@@ -105,6 +124,7 @@ namespace cslox
         public interface IVisitor<TResult>
         {
             TResult VisitBinary(Binary expr);
+            TResult VisitLogical(Logical logical);
             TResult VisitUnary(Unary expr);
             TResult VisitLiteral(Literal expr);
             TResult VisitGrouping(Grouping expr);

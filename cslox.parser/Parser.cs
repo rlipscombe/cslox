@@ -60,13 +60,17 @@ namespace cslox
             return new Stmt.Var(name, init);
         }
 
-        // statement :: exprStmt | ifStmt | printStmt | block ;
+        // statement :: exprStmt | forStmt | ifStmt | printStmt | whileStmt | block ;
         private Stmt Statement()
         {
             if (MatchAny(TokenType.If))
                 return IfStatement();
+            if (MatchAny(TokenType.For))
+                return ForStatement();
             if (MatchAny(TokenType.Print))
                 return PrintStatement();
+            if (MatchAny(TokenType.While))
+                return WhileStatement();
             if (MatchAny(TokenType.LeftBrace))
                 return BlockStatement();
 
@@ -104,6 +108,76 @@ namespace cslox
             return new Stmt.Print(expr);
         }
 
+        // whileStmt :: "while" "(" expression ")" statement ;
+        private Stmt WhileStatement()
+        {
+            Consume(TokenType.LeftParen, "Expect '(' after 'while'");
+            var condition = Expression();
+            Consume(TokenType.RightParen, "Expect ')' after while condition");
+
+            var body = Statement();
+            return new Stmt.While(condition, body);
+        }
+
+        // forStmt :: "for" "(" ( varDecl | exprStmt | "; ")
+        //                      expression? ";"
+        //                      expression? ")" statement ;
+        private Stmt ForStatement()
+        {
+            Consume(TokenType.LeftParen, "Expect '(' after 'for'");
+
+            // Get the initializer.
+            Stmt init;
+            if (MatchAny(TokenType.Semicolon))
+                init = null;
+            else if (MatchAny(TokenType.Var))
+                init = VarDeclaration();
+            else
+                init = ExpressionStatement();
+
+            // Get the condition.
+            Expr condition = null;
+            if (!Check(TokenType.Semicolon))
+                condition = Expression();
+
+            Consume(TokenType.Semicolon, "Expect ';' after loop condition");
+
+            // Get the increment.
+            Expr increment = null;
+            if (!Check(TokenType.RightParen))
+                increment = Expression();
+
+            Consume(TokenType.RightParen, "Expect ')' after for clauses");
+
+            var body = Statement();
+
+            // Desugar by creating a while loop instead.
+            if (increment != null)
+            {
+                body = new Stmt.Block(
+                    new List<Stmt> {
+                        body,
+                        new Stmt.Expression(increment)
+                    });
+            }
+
+            if (condition == null)
+                condition = new Expr.Literal(true);
+
+            body = new Stmt.While(condition, body);
+
+            if (init != null)
+            {
+                body = new Stmt.Block(
+                    new List<Stmt> {
+                        init,
+                        body
+                    });
+            }
+
+            return body;
+        }
+
         // block :: "{" declaration* "}" ;
         private Stmt BlockStatement()
         {
@@ -124,10 +198,10 @@ namespace cslox
             return Assignment();
         }
 
-        // assignment :: IDENTIFIER "=" assignment | equality ;
+        // assignment :: IDENTIFIER "=" assignment | logic_or ;
         private Expr Assignment()
         {
-            var expr = Equality();
+            var expr = Or();
 
             if (MatchAny(TokenType.Equal))
             {
@@ -141,6 +215,36 @@ namespace cslox
                 }
 
                 _errors.AddParserError(equals, "Invalid assignment target");
+            }
+
+            return expr;
+        }
+
+        // logic_or :: logic_and ( "or" logic_and )* ;
+        private Expr Or()
+        {
+            var expr = And();
+
+            while (MatchAny(TokenType.Or))
+            {
+                var op = Previous();
+                var right = And();
+                expr = new Expr.Logical(expr, op, right);
+            }
+
+            return expr;
+        }
+
+        // logic_and :: equality ( "and" equality )* ;
+        private Expr And()
+        {
+            var expr = Equality();
+
+            while (MatchAny(TokenType.And))
+            {
+                var op = Previous();
+                var right = And();
+                expr = new Expr.Logical(expr, op, right);
             }
 
             return expr;
