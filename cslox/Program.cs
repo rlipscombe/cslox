@@ -28,7 +28,7 @@ namespace cslox
             var text = File.ReadAllText(path);
 
             var environment = new Environment();
-            var errors = new ErrorReporter();
+            var errors = new ErrorReporter(path);
             Run(text, environment, errors);
             if (errors.HadError)
                 return 65;
@@ -44,7 +44,7 @@ namespace cslox
             {
                 Console.Write("> ");
                 var text = Console.ReadLine();
-                var errors = new ErrorReporter();
+                var errors = new ErrorReporter("interactive");
                 Run(text, environment, errors);
             }
         }
@@ -65,27 +65,34 @@ namespace cslox
 
     internal class ErrorReporter : IErrorReporter
     {
+        string _file;
+
+        public ErrorReporter(string file)
+        {
+            _file = file;
+        }
+
         public bool HadError { get; internal set; }
         public bool HadRuntimeError { get; internal set; }
 
         public void AddScannerError(int line, string message)
         {
-            Console.Error.WriteLine("{0}: {1}", line, message);
+            Console.Error.WriteLine("{0}:{1}: {2}", _file, line, message);
             HadError = true;
         }
 
         public void AddParserError(Token token, string message)
         {
             if (token.Type == TokenType.EOF)
-                Console.Error.WriteLine("{0}: at end {1}", token.Line, message);
+                Console.Error.WriteLine("{0}:{1}: at end {2}", _file, token.Line, message);
             else
-                Console.Error.WriteLine("{0}: at '{1}' {2}", token.Line, token.Lexeme, message);
+                Console.Error.WriteLine("{0}:{1}: at '{2}' {3}", _file, token.Line, token.Lexeme, message);
             HadError = true;
         }
 
         public void AddRuntimeError(RuntimeError err)
         {
-            Console.Error.WriteLine("{0}: {1}", err.Op.Line, err.Message);
+            Console.Error.WriteLine("{0}:{1}: {2}", _file, err.Op.Line, err.Message);
             HadRuntimeError = true;
         }
     }
