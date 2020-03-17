@@ -289,7 +289,7 @@ namespace cslox
             return LeftBinary(Unary, new TokenType[] { TokenType.Star, TokenType.Slash }, Unary);
         }
 
-        // unary :: ( "!" | "-" ) unary | primary ;
+        // unary :: ( "!" | "-" ) unary | call ;
         private Expr Unary()
         {
             if (MatchAny(TokenType.Bang, TokenType.Minus))
@@ -299,8 +299,46 @@ namespace cslox
                 return new Expr.Unary(op, right);
             }
 
-            return Primary();
+            return Call();
         }
+
+        // call :: primary ( "(" arguments? ")" )* ;
+        private Expr Call()
+        {
+            var expr = Primary();
+
+            for (;;)
+            {
+                if (MatchAny(TokenType.LeftParen))
+                    expr = FinishCall(expr);
+                else
+                    break;
+            }
+
+            return expr;
+        }
+
+        private Expr FinishCall(Expr callee)
+        {
+            var arguments = new List<Expr>();
+            if (!Check(TokenType.RightParen))
+            {
+                do {
+                    // Arbitrary limit; not really needed.
+                    if (arguments.Count >= 255) {
+                        // Note that it'll report the same error for each of the extra arguments.
+                        _errors.AddParserError(Peek(), "Cannot have more than 255 arguments");
+                    }
+
+                    arguments.Add(Expression());
+                } while (MatchAny(TokenType.Comma));
+            }
+
+            var paren = Consume(TokenType.RightParen, "Expect ')' after arguments");
+            return new Expr.Call(callee, paren, arguments);
+        }
+
+        // arguments :: expression ( "," expression )* ;
 
         // primary :: "false" | "true" | "nil" | NUM | STR | IDENTIFIER | "(" expression ")" ;
         private Expr Primary()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace cslox
 {
@@ -331,5 +332,39 @@ namespace cslox
 
             return Unit.Default;
         }
+
+        public object VisitCall(Expr.Call expr)
+        {
+            var callee = Evaluate(expr.Callee);
+
+            // Assuming 'Select' is left-to-right, we'll evaluate arguments left-to-right.
+            // In C, this is undefined, so... /shrug.
+            var arguments = expr.Arguments
+                                .Select(arg => Evaluate(arg))
+                                .ToList();
+
+            var callable = callee as ILoxCallable;
+            if (callable != null)
+            {
+                // JavaScript discards extra arguments and sets missing ones to 'undefined'. We'll be stricter.
+                if (arguments.Count != callable.Arity)
+                {
+                    throw new RuntimeError(expr.Paren,
+                                            string.Format("Expected {0} arguments but got {1}",
+                                                            callable.Arity, arguments.Count));
+                }
+
+                return callable.Call(this, arguments);
+            }
+            else
+                throw new RuntimeError(expr.Paren, "Can only call functions and classes");
+        }
+    }
+
+    // TODO: We've not used 'Lox' in any other names (that's literally what namespaces are for)...?
+    interface ILoxCallable
+    {
+        object Call(Interpreter interpreter, List<object> arguments);
+        int Arity { get; }
     }
 }

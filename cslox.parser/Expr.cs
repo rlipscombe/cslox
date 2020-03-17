@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace cslox
 {
     public abstract class Expr
@@ -121,6 +123,25 @@ namespace cslox
             }
         }
 
+        public class Call : Expr
+        {
+            public Call(Expr callee, Token paren, List<Expr> arguments)
+            {
+                Callee = callee;
+                Paren = paren;
+                Arguments = arguments;
+            }
+
+            public Expr Callee { get; }
+            public Token Paren { get; }
+            public List<Expr> Arguments { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitCall(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitBinary(Binary expr);
@@ -130,6 +151,7 @@ namespace cslox
             TResult VisitGrouping(Grouping expr);
             TResult VisitVariable(Variable expr);
             TResult VisitAssign(Assign expr);
+            TResult VisitCall(Call call);
         }
     }
 }
