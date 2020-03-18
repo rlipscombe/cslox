@@ -171,5 +171,22 @@ namespace cslox
             builder.Append(")");
             return builder.ToString();
         }
+
+        public string VisitFunction(Stmt.Function stmt)
+        {
+            var builder = new StringBuilder();
+            builder.Append("(fun (");
+            builder.Append(stmt.Name.Lexeme);
+            foreach (var param in stmt.Parameters)
+            {
+                builder.Append(" ");
+                builder.Append(param.Lexeme);
+            }
+
+            builder.Append(")");
+            foreach (var s in stmt.Body)
+                builder.Append(s.Accept(this));
+            return builder.ToString();
+        }
     }
 }

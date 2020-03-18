@@ -62,14 +62,18 @@ namespace cslox
 
     public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<Unit>
     {
+        private Environment _globals = new Environment();
         private Environment _environment;
         private IErrorReporter _errors;
 
-        public Interpreter(Environment environment, IErrorReporter errors)
+        public Interpreter(Environment globals, IErrorReporter errors)
         {
-            _environment = environment;
+            _globals = globals;
+            _environment = _globals;
             _errors = errors;
         }
+
+        public Environment Globals { get { return _globals; } }
 
         public void Interpret(List<Stmt> statements)
         {
@@ -288,7 +292,8 @@ namespace cslox
             return Unit.Default;
         }
 
-        private void ExecuteBlock(List<Stmt> statements, Environment environment)
+        // Needs to be public, because it's also used for executing functions.
+        public void ExecuteBlock(List<Stmt> statements, Environment environment)
         {
             var previous = _environment;
             try
@@ -359,6 +364,13 @@ namespace cslox
             else
                 throw new RuntimeError(expr.Paren, "Can only call functions and classes");
         }
+
+        public Unit VisitFunction(Stmt.Function stmt)
+        {
+            var function = new LoxFunction(stmt);
+            _environment.Define(stmt.Name.Lexeme, function);
+            return Unit.Default;
+        }
     }
 
     // TODO: We've not used 'Lox' in any other names (that's literally what namespaces are for)...?
@@ -366,5 +378,29 @@ namespace cslox
     {
         object Call(Interpreter interpreter, List<object> arguments);
         int Arity { get; }
+    }
+
+    class LoxFunction : ILoxCallable
+    {
+        public LoxFunction(Stmt.Function declaration)
+        {
+            Declaration = declaration;
+        }
+
+        Stmt.Function Declaration { get; }
+
+        public int Arity => Declaration.Parameters.Count;
+
+        public object Call(Interpreter interpreter, List<object> arguments)
+        {
+            var environment = new Environment(interpreter.Globals);
+            foreach (var binding in Enumerable.Zip(Declaration.Parameters, arguments))
+            {
+                environment.Define(binding.First.Lexeme, binding.Second);
+            }
+
+            interpreter.ExecuteBlock(Declaration.Body, environment);
+            return null;
+        }
     }
 }

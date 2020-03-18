@@ -104,6 +104,25 @@ namespace cslox
             }
         }
 
+        public class Function : Stmt
+        {
+            public Function(Token name, List<Token> parameters, List<Stmt> body)
+            {
+                Name = name;
+                Parameters = parameters;
+                Body = body;
+            }
+
+            public Token Name { get; }
+            public List<Token> Parameters { get; }
+            public List<Stmt> Body { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitFunction(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitPrintStmt(Stmt.Print stmt);
@@ -112,6 +131,7 @@ namespace cslox
             TResult VisitBlockStmt(Stmt.Block stmt);
             TResult VisitIfStmt(Stmt.If stmt);
             TResult VisitWhileStmt(Stmt.While stmt);
+            TResult VisitFunction(Stmt.Function stmt);
         }
     }
 }

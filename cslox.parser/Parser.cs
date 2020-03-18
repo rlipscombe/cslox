@@ -28,11 +28,13 @@ namespace cslox
             return statements;
         }
 
-        // declaration :: varDecl | statement ;
+        // declaration :: funDecl | varDecl | statement ;
         private Stmt Declaration()
         {
             try
             {
+                if (MatchAny(TokenType.Fun))
+                    return FunctionDeclaration("function");
                 if (MatchAny(TokenType.Var))
                     return VarDeclaration();
 
@@ -43,6 +45,32 @@ namespace cslox
                 Synchronize();
                 return null;
             }
+        }
+
+        // funDecl :: "fun" function ;
+        // function :: IDENTIFIER "(" parameters? ")" block ;
+        // parameters :: IDENTIFIER ( "," IDENTIFIER )* ;
+        private Stmt FunctionDeclaration(string kind)
+        {
+            var name = Consume(TokenType.Identifier, "Expect " + kind + " name");
+            Consume(TokenType.LeftParen, "Expect '(' after " + kind + " name");
+            var parameters = new List<Token>();
+            if (!Check(TokenType.RightParen))
+            {
+                do
+                {
+                    if (parameters.Count >= 255) {
+                        _errors.AddParserError(Peek(), "Cannot have more than 255 parameters");
+                    }
+
+                    parameters.Add(Consume(TokenType.Identifier, "Expect parameter name"));
+                } while (MatchAny(TokenType.Comma));
+            }
+
+            Consume(TokenType.RightParen, "Expect ')' after parameters");
+            Consume(TokenType.LeftBrace, "Expect '{' before " + kind + " body");
+            var body = Block();
+            return new Stmt.Function(name, parameters, body);
         }
 
         // varDecl :: "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -181,6 +209,11 @@ namespace cslox
         // block :: "{" declaration* "}" ;
         private Stmt BlockStatement()
         {
+            return new Stmt.Block(Block());
+        }
+
+        private List<Stmt> Block()
+        {
             var statements = new List<Stmt>();
 
             while (!Check(TokenType.RightBrace) && !IsEOF())
@@ -189,7 +222,7 @@ namespace cslox
             }
 
             Consume(TokenType.RightBrace, "Expect '}' after block");
-            return new Stmt.Block(statements);
+            return statements;
         }
 
         // expression :: assignment ;
@@ -303,6 +336,7 @@ namespace cslox
         }
 
         // call :: primary ( "(" arguments? ")" )* ;
+        // arguments :: expression ( "," expression )* ;
         private Expr Call()
         {
             var expr = Primary();
@@ -337,8 +371,6 @@ namespace cslox
             var paren = Consume(TokenType.RightParen, "Expect ')' after arguments");
             return new Expr.Call(callee, paren, arguments);
         }
-
-        // arguments :: expression ( "," expression )* ;
 
         // primary :: "false" | "true" | "nil" | NUM | STR | IDENTIFIER | "(" expression ")" ;
         private Expr Primary()
