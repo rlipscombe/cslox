@@ -8,7 +8,7 @@ namespace cslox
         Comma, Dot,
         Minus, Plus,
         Semicolon,
-        Slash, Star,
+        Slash, Star, Percent,
 
         // One *or* two character tokens
         Bang, BangEqual,

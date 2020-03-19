@@ -75,6 +75,7 @@ namespace cslox
                 case '+': AddToken(TokenType.Plus); break;
                 case ';': AddToken(TokenType.Semicolon); break;
                 case '*': AddToken(TokenType.Star); break;
+                case '%': AddToken(TokenType.Percent); break;
 
                 // Single character lookahead.
                 case '!': AddToken(Match('=') ? TokenType.BangEqual : TokenType.Bang); break;

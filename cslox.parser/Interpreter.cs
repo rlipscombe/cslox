@@ -136,12 +136,16 @@ namespace cslox
                     }
                     else
                         throw new RuntimeError(expr.Op, "Operands must be two numbers or two strings");
+
                 case TokenType.Slash:
                     AssertNumberOperands(expr.Op, left, right);
                     return (double)left / (double)right;
                 case TokenType.Star:
                     AssertNumberOperands(expr.Op, left, right);
                     return (double)left * (double)right;
+                case TokenType.Percent:
+                    AssertNumberOperands(expr.Op, left, right);
+                    return (double)left % (double)right;
 
                 case TokenType.BangEqual:
                     return !IsEqual(left, right);

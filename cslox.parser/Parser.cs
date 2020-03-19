@@ -316,10 +316,10 @@ namespace cslox
             return LeftBinary(Multiplication, new TokenType[] { TokenType.Minus, TokenType.Plus }, Multiplication);
         }
 
-        // multiplication :: unary ( ( "*" | "/" ) unary )* ;
+        // multiplication :: unary ( ( "*" | "/" | "%" ) unary )* ;
         private Expr Multiplication()
         {
-            return LeftBinary(Unary, new TokenType[] { TokenType.Star, TokenType.Slash }, Unary);
+            return LeftBinary(Unary, new TokenType[] { TokenType.Star, TokenType.Slash, TokenType.Percent }, Unary);
         }
 
         // unary :: ( "!" | "-" ) unary | call ;
