@@ -236,7 +236,11 @@ namespace cslox
 
             while (!Check(TokenType.RightBrace) && !IsEOF())
             {
-                statements.Add(Declaration());
+                var stmt = Declaration();
+                if (stmt != null)
+                {
+                    statements.Add(stmt);
+                }
             }
 
             Consume(TokenType.RightBrace, "Expect '}' after block");
