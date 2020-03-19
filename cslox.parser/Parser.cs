@@ -113,6 +113,7 @@ namespace cslox
             return ExpressionStatement();
         }
 
+        // exprStmt :: expression ";" ;
         private Stmt ExpressionStatement()
         {
             var expr = Expression();
@@ -259,7 +260,8 @@ namespace cslox
             return Assignment();
         }
 
-        // assignment :: IDENTIFIER "=" assignment | logic_or ;
+        // assignment :: IDENTIFIER "=" assignment
+        //             | logic_or ;
         private Expr Assignment()
         {
             var expr = Or();
