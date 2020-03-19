@@ -1,0 +1,50 @@
+var INC = 0;
+var GET = 1;
+
+fun it() {
+    var n = 0;
+
+    fun do(op)
+    {
+        if (op == INC)
+            n = n + 1;
+
+        return n;
+    }
+
+    return do;
+}
+
+a = it();
+b = it();
+
+a(INC);
+a(INC);
+console.log(a(GET));
+console.log(b(GET));
+
+function other() {
+    function get() {
+        return x;
+    }
+
+    return get;
+}
+
+var x = 42;
+var g = other();
+x = 101;
+
+console.log(g());
+
+var yy = 123;
+
+function again() {
+    return yy;
+}
+
+var h = again;
+
+var yy = 321;
+
+console.log(h());
