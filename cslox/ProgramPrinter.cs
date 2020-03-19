@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace cslox
@@ -198,12 +199,7 @@ namespace cslox
         {
             var builder = new StringBuilder();
             builder.Append("(fun (");
-            foreach (var param in expr.Parameters)
-            {
-                builder.Append(" ");
-                builder.Append(param.Lexeme);
-            }
-
+            builder.AppendJoin(' ', expr.Parameters.Select(param => param.Lexeme));
             builder.Append(")");
             foreach (var s in expr.Body)
                 builder.Append(s.Accept(this));
