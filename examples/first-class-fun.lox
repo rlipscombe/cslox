@@ -1,0 +1,15 @@
+fun aggregate(begin, end, f) {
+    var acc = begin;
+    for (var i = begin + 1; i <= end; i = i + 1) {
+        acc = f(i, acc);
+    }
+
+    return acc;
+}
+
+fun mul(x, a) { return x * a; }
+print aggregate(1, 5, mul);     // 120
+
+// BUG: requires anon functions:
+var sum = fun(x, a) { return x + a; };
+print aggregate(1, 5, sum);
