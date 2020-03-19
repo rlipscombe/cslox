@@ -88,7 +88,7 @@ namespace cslox
             return new Stmt.Var(name, init);
         }
 
-        // statement :: exprStmt | forStmt | ifStmt | printStmt | whileStmt | block ;
+        // statement :: exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | block ;
         private Stmt Statement()
         {
             if (MatchAny(TokenType.If))
@@ -97,6 +97,8 @@ namespace cslox
                 return ForStatement();
             if (MatchAny(TokenType.Print))
                 return PrintStatement();
+            if (MatchAny(TokenType.Return))
+                return ReturnStatement();
             if (MatchAny(TokenType.While))
                 return WhileStatement();
             if (MatchAny(TokenType.LeftBrace))
@@ -134,6 +136,22 @@ namespace cslox
             var expr = Expression();
             Consume(TokenType.Semicolon, "Expect ';' after value");
             return new Stmt.Print(expr);
+        }
+
+        // returnStmt :: "return" expression? ";" ;
+        private Stmt ReturnStatement()
+        {
+            var keyword = Previous();
+
+            // Expression is optional
+            Expr value = null;
+            if (!Check(TokenType.Semicolon))
+            {
+                value = Expression();
+            }
+
+            Consume(TokenType.Semicolon, "Expect ';' after return value");
+            return new Stmt.Return(keyword, value);
         }
 
         // whileStmt :: "while" "(" expression ")" statement ;

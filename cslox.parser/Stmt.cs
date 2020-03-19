@@ -123,8 +123,26 @@ namespace cslox
             }
         }
 
+        public class Return : Stmt
+        {
+            public Return(Token keyword, Expr value)
+            {
+                Keyword = keyword;
+                Value = value;
+            }
+
+            public Token Keyword { get; }
+            public Expr Value { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitReturn(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
+            // TODO: Naming is inconsistent here (VisitFooStmt vs VisitFoo).
             TResult VisitPrintStmt(Stmt.Print stmt);
             TResult VisitExpressionStmt(Stmt.Expression stmt);
             TResult VisitVarStmt(Stmt.Var stmt);
@@ -132,6 +150,7 @@ namespace cslox
             TResult VisitIfStmt(Stmt.If stmt);
             TResult VisitWhileStmt(Stmt.While stmt);
             TResult VisitFunction(Stmt.Function stmt);
+            TResult VisitReturn(Return @return);
         }
     }
 }

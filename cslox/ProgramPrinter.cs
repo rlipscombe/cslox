@@ -188,5 +188,10 @@ namespace cslox
                 builder.Append(s.Accept(this));
             return builder.ToString();
         }
+
+        public string VisitReturn(Stmt.Return stmt)
+        {
+            return Parenthesize("return", stmt.Value);
+        }
     }
 }
