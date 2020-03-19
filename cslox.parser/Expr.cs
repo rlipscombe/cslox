@@ -142,6 +142,25 @@ namespace cslox
             }
         }
 
+        public class Function : Expr
+        {
+            public Function(Token fun, List<Token> parameters, List<Stmt> body)
+            {
+                Fun = fun;
+                Parameters = parameters;
+                Body = body;
+            }
+
+            public Token Fun { get; }
+            public List<Token> Parameters { get; }
+            public List<Stmt> Body { get; }
+
+            public override TResult Accept<TResult>(IVisitor<TResult> visitor)
+            {
+                return visitor.VisitFunction(this);
+            }
+        }
+
         public interface IVisitor<TResult>
         {
             TResult VisitBinary(Binary expr);
@@ -152,6 +171,7 @@ namespace cslox
             TResult VisitVariable(Variable expr);
             TResult VisitAssign(Assign expr);
             TResult VisitCall(Call call);
+            TResult VisitFunction(Function function);
         }
     }
 }

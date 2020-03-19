@@ -193,5 +193,21 @@ namespace cslox
         {
             return Parenthesize("return", stmt.Value);
         }
+
+        public string VisitFunction(Expr.Function expr)
+        {
+            var builder = new StringBuilder();
+            builder.Append("(fun (");
+            foreach (var param in expr.Parameters)
+            {
+                builder.Append(" ");
+                builder.Append(param.Lexeme);
+            }
+
+            builder.Append(")");
+            foreach (var s in expr.Body)
+                builder.Append(s.Accept(this));
+            return builder.ToString();
+        }
     }
 }

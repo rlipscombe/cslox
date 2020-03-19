@@ -372,9 +372,16 @@ namespace cslox
         public Unit VisitFunction(Stmt.Function stmt)
         {
             // Capture the environment at declaration time.
-            var function = new LoxFunction(stmt, _environment);
+            var function = new LoxFunction(_environment, stmt.Parameters, stmt.Body);
             _environment.Define(stmt.Name.Lexeme, function);
             return Unit.Default;
+        }
+
+        public object VisitFunction(Expr.Function expr)
+        {
+            // Capture the environment at declaration time.
+            var function = new LoxFunction(_environment, expr.Parameters, expr.Body);
+            return function;
         }
 
         public Unit VisitReturn(Stmt.Return stmt)
@@ -406,32 +413,34 @@ namespace cslox
 
     class LoxFunction : ILoxCallable
     {
-        public LoxFunction(Stmt.Function declaration, Environment closure)
+        public LoxFunction(Environment closure, List<Token> parameters, List<Stmt> body)
         {
-            Declaration = declaration;
             // By capturing the closure here, this is the environment at
             // declaration time. This is lexical closure. This is NOT what
             // JS does.
             Closure = closure;
+            Parameters = parameters;
+            Body = body;
         }
 
-        Stmt.Function Declaration { get; }
         Environment Closure { get; }
+        List<Token> Parameters { get; }
+        List<Stmt> Body { get; }
 
-        public int Arity => Declaration.Parameters.Count;
+        public int Arity => Parameters.Count;
 
         public object Call(Interpreter interpreter, List<object> arguments)
         {
             // Our environment is nested in the closure.
             var environment = new Environment(Closure);
-            foreach (var binding in Enumerable.Zip(Declaration.Parameters, arguments))
+            foreach (var binding in Enumerable.Zip(Parameters, arguments))
             {
                 environment.Define(binding.First.Lexeme, binding.Second);
             }
 
             try
             {
-                interpreter.ExecuteBlock(Declaration.Body, environment);
+                interpreter.ExecuteBlock(Body, environment);
             }
             catch (Return ret)
             {

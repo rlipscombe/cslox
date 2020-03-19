@@ -150,7 +150,7 @@ namespace cslox
             TResult VisitIfStmt(Stmt.If stmt);
             TResult VisitWhileStmt(Stmt.While stmt);
             TResult VisitFunction(Stmt.Function stmt);
-            TResult VisitReturn(Return @return);
+            TResult VisitReturn(Return stmt);
         }
     }
 }

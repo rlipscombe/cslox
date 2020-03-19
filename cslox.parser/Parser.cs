@@ -54,6 +54,15 @@ namespace cslox
         {
             var name = Consume(TokenType.Identifier, "Expect " + kind + " name");
             Consume(TokenType.LeftParen, "Expect '(' after " + kind + " name");
+            var parameters = FunctionParameters();
+            Consume(TokenType.RightParen, "Expect ')' after parameters");
+            Consume(TokenType.LeftBrace, "Expect '{' before " + kind + " body");
+            var body = Block();
+            return new Stmt.Function(name, parameters, body);
+        }
+
+        private List<Token> FunctionParameters()
+        {
             var parameters = new List<Token>();
             if (!Check(TokenType.RightParen))
             {
@@ -67,10 +76,7 @@ namespace cslox
                 } while (MatchAny(TokenType.Comma));
             }
 
-            Consume(TokenType.RightParen, "Expect ')' after parameters");
-            Consume(TokenType.LeftBrace, "Expect '{' before " + kind + " body");
-            var body = Block();
-            return new Stmt.Function(name, parameters, body);
+            return parameters;
         }
 
         // varDecl :: "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -416,6 +422,17 @@ namespace cslox
                 var expr = Expression();
                 Consume(TokenType.RightParen, "Expect ')' after expression");
                 return new Expr.Grouping(expr);
+            }
+
+            if (MatchAny(TokenType.Fun))
+            {
+                Consume(TokenType.LeftParen, "Expect '(' after fun");
+                var location = Previous();
+                var parameters = FunctionParameters();
+                Consume(TokenType.RightParen, "Expect ')' after parameters");
+                Consume(TokenType.LeftBrace, "Expect '{' before fun body");
+                var body = Block();
+                return new Expr.Function(location, parameters, body);
             }
 
             _errors.AddParserError(Peek(), "Expect expression");
