@@ -32,10 +32,8 @@ namespace cslox
 
             var errors = new ErrorReporter(path);
             Run(text, environment, errors);
-            if (errors.HadError)
-                return 65;
-            if (errors.HadRuntimeError)
-                return 70;
+            if (errors.Count != 0)
+                return 65;  // ??
             return 0;
         }
 
@@ -55,47 +53,72 @@ namespace cslox
         {
             var scanner = new Scanner(text, errors);
             var tokens = scanner.ScanTokens();
-            var parser = new Parser(tokens, errors);
-            var program = parser.Parse();
+            if (errors.Count == 0)
+            {
+                var parser = new Parser(tokens, errors);
+                var program = parser.Parse();
+                if (errors.Count == 0)
+                {
+                    Console.WriteLine(ProgramPrinter.Print(program));
 
-            Console.WriteLine(ProgramPrinter.Print(program));
+                    // TODO: Feels kinda weird to be creating the interpreter
+                    // before the resolver. Maybe there's an intermediate data structure
+                    // that could be passed from one to the other?
+                    var interpreter = new Interpreter(environment, errors);
+                    var resolver = new Resolver(interpreter, errors);
+                    resolver.Resolve(program);
 
-            var interpreter = new Interpreter(environment, errors);
-            interpreter.Interpret(program);
+                    if (errors.Count == 0)
+                        interpreter.Interpret(program);
+                }
+            }
         }
     }
 
     internal class ErrorReporter : IErrorReporter
     {
         string _file;
+        int _count = 0;
 
         public ErrorReporter(string file)
         {
             _file = file;
         }
 
-        public bool HadError { get; internal set; }
-        public bool HadRuntimeError { get; internal set; }
-
         public void AddScannerError(int line, string message)
         {
             Console.Error.WriteLine("{0}:{1}: {2}", _file, line, message);
-            HadError = true;
+            ++_count;
         }
 
         public void AddParserError(Token token, string message)
         {
-            if (token.Type == TokenType.EOF)
-                Console.Error.WriteLine("{0}:{1}: at end {2}", _file, token.Line, message);
-            else
-                Console.Error.WriteLine("{0}:{1}: at '{2}' {3}", _file, token.Line, token.Lexeme, message);
-            HadError = true;
+            AddError(token, message);
         }
 
         public void AddRuntimeError(RuntimeError err)
         {
             Console.Error.WriteLine("{0}:{1}: {2}", _file, err.Op.Line, err.Message);
-            HadRuntimeError = true;
+            ++_count;
+        }
+
+        public void AddResolverError(Token name, string message)
+        {
+            AddError(name, message);
+        }
+
+        private void AddError(Token token, string message)
+        {
+            if (token.Type == TokenType.EOF)
+                Console.Error.WriteLine("{0}:{1}: at end {2}", _file, token.Line, message);
+            else
+                Console.Error.WriteLine("{0}:{1}: at '{2}' {3}", _file, token.Line, token.Lexeme, message);
+            ++_count;
+        }
+
+        public int Count
+        {
+            get { return _count; }
         }
     }
 }

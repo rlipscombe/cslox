@@ -58,13 +58,35 @@ namespace cslox
             if (!_values.ContainsKey(name.Lexeme))
                 throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'");
         }
+
+        internal object GetAt(int distance, string name)
+        {
+            return GetAncestor(distance)._values[name];
+        }
+
+        private Environment GetAncestor(int distance)
+        {
+            var environment = this;
+            for (int i = 0; i < distance; ++i)
+                environment = environment._enclosing;
+
+            return environment;
+        }
+
+        internal void AssignAt(int distance, Token name, object value)
+        {
+            GetAncestor(distance)._values[name.Lexeme] = value;
+        }
     }
 
     public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<Unit>
     {
         private Environment _globals = new Environment();
-        private Environment _environment;
         private IErrorReporter _errors;
+
+        private Dictionary<Expr, int> _locals = new Dictionary<Expr, int>();
+
+        private Environment _environment;
 
         public Interpreter(Environment globals, IErrorReporter errors)
         {
@@ -154,6 +176,11 @@ namespace cslox
             }
 
             throw new NotSupportedException();
+        }
+
+        internal void Resolve(Expr expr, int depth)
+        {
+            _locals.Add(expr, depth);
         }
 
         public object VisitLogical(Expr.Logical expr)
@@ -267,7 +294,16 @@ namespace cslox
 
         public object VisitVariable(Expr.Variable expr)
         {
-            return _environment.Get(expr.Name);
+            return LookupVariable(expr.Name, expr);
+        }
+
+        private object LookupVariable(Token name, Expr expr)
+        {
+            int distance;
+            if (_locals.TryGetValue(expr, out distance))
+                return _environment.GetAt(distance, name.Lexeme);
+            else
+                return _globals.Get(name);
         }
 
         public Unit VisitVarStmt(Stmt.Var stmt)
@@ -286,7 +322,12 @@ namespace cslox
         {
             var value = Evaluate(expr.Value);
 
-            _environment.Assign(expr.Name, value);
+            int distance;
+            if (_locals.TryGetValue(expr, out distance))
+                _environment.AssignAt(distance, expr.Name, value);
+            else
+                _globals.Assign(expr.Name, value);
+
             return value;
         }
 

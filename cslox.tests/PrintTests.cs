@@ -15,6 +15,11 @@ namespace cslox.tests
                 _errors = errors;
             }
 
+            public int Count
+            {
+                get { return _errors.Count; }
+            }
+
             public void AddScannerError(int line, string message)
             {
                 throw new NotImplementedException();
@@ -26,6 +31,11 @@ namespace cslox.tests
             }
 
             public void AddRuntimeError(RuntimeError err)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddResolverError(Token name, string message)
             {
                 throw new NotImplementedException();
             }
