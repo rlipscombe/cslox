@@ -23,8 +23,8 @@ a(INC);
 console.log(a(GET));
 console.log(b(GET));
 
-function other() {
-    function get() {
+fun other() {
+    fun get() {
         return x;
     }
 
@@ -39,7 +39,7 @@ console.log(g());
 
 var yy = 123;
 
-function again() {
+fun again() {
     return yy;
 }
 

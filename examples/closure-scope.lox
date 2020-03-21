@@ -1,0 +1,17 @@
+var a = "global";
+{
+    // We capture the environment here, which doesn't contain 'a'.
+    fun showA() {
+        print a;
+    }
+
+    // so 'a' defers to the global environment, "global"
+    showA();
+
+    // but we captured a reference to a mutable environment,
+    // so this adds 'a' to the inner environment.
+    var a = "block";
+
+    // so here, 'a' resolves against the inner environment, "block".
+    showA();
+}
