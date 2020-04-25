@@ -10,9 +10,8 @@ fun aggregate(begin, end, f) {
 fun mul(x, a) { return x * a; }
 print aggregate(1, 5, mul);     // 120
 
-// BUG: requires anon functions:
 var sum = fun(x, a) { return x + a; };
-print aggregate(1, 5, sum);
+print aggregate(1, 5, sum); // 15
 
 // Functions are printable
 print aggregate;
