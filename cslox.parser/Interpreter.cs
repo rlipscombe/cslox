@@ -413,7 +413,8 @@ namespace cslox
         public Unit VisitFunction(Stmt.Function stmt)
         {
             // Capture the environment at declaration time.
-            var function = new LoxFunction(_environment, stmt.Parameters, stmt.Body);
+            string name = string.Format("<fun {0}>", stmt.Name.Lexeme);
+            var function = new LoxFunction(name, _environment, stmt.Parameters, stmt.Body);
             _environment.Define(stmt.Name.Lexeme, function);
             return Unit.Default;
         }
@@ -421,7 +422,8 @@ namespace cslox
         public object VisitFunction(Expr.Function expr)
         {
             // Capture the environment at declaration time.
-            var function = new LoxFunction(_environment, expr.Parameters, expr.Body);
+            string name = string.Format("<fun @{0}>", expr.Fun.Line);
+            var function = new LoxFunction(name, _environment, expr.Parameters, expr.Body);
             return function;
         }
 
@@ -454,8 +456,10 @@ namespace cslox
 
     class LoxFunction : ILoxCallable
     {
-        public LoxFunction(Environment closure, List<Token> parameters, List<Stmt> body)
+        public LoxFunction(string name, Environment closure, List<Token> parameters, List<Stmt> body)
         {
+            Name = name;
+
             // By capturing the closure here, this is the environment at
             // declaration time. This is lexical closure. This is NOT what
             // JS does.
@@ -464,6 +468,7 @@ namespace cslox
             Body = body;
         }
 
+        string Name { get; }
         Environment Closure { get; }
         List<Token> Parameters { get; }
         List<Stmt> Body { get; }
@@ -489,6 +494,11 @@ namespace cslox
             }
 
             return null;
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

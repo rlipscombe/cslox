@@ -21,6 +21,11 @@ namespace cslox
             {
                 return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             }
+
+            public override string ToString()
+            {
+                return "<fun clock()>";
+            }
         }
     }
 }

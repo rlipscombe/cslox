@@ -43,6 +43,9 @@ namespace cslox
         Interpreter _interpreter;
         ScopeStack _scopes = new ScopeStack();
 
+        enum FunctionType { None, Function };
+        FunctionType _currentFunction = FunctionType.None;
+
         public Resolver(Interpreter interpreter, IErrorReporter errors)
         {
             _interpreter = interpreter;
@@ -102,6 +105,11 @@ namespace cslox
                 return;
 
             var scope = _scopes.Peek();
+            if (scope.ContainsKey(name.Lexeme))
+            {
+                _errors.AddResolverError(name, "Variable with this name already declared in this scope");
+            }
+
             scope.Add(name.Lexeme, Resolution.NotReady);
         }
 
@@ -191,16 +199,7 @@ namespace cslox
 
         public Unit VisitFunction(Expr.Function function)
         {
-            BeginScope();
-            foreach (var param in function.Parameters)
-            {
-                Declare(param);
-                Define(param);
-            }
-
-            Resolve(function.Body);
-            EndScope();
-
+            ResolveFunction(function);
             return Unit.Default;
         }
 
@@ -236,26 +235,44 @@ namespace cslox
         {
             Declare(stmt.Name);
             Define(stmt.Name);
-            ResolveFunction(stmt);
+            ResolveFunction(stmt, FunctionType.Function);
             return Unit.Default;
         }
 
-        private void ResolveFunction(Stmt.Function stmt)
+        private void ResolveFunction(Stmt.Function stmt, FunctionType type)
         {
+            ResolveFunction(type, stmt.Parameters, stmt.Body);
+        }
+
+        private void ResolveFunction(FunctionType type, List<Token> parameters, List<Stmt> body)
+        {
+            var enclosingFunction = _currentFunction;
+            _currentFunction = type;
             BeginScope();
-            foreach (var param in stmt.Parameters)
+            foreach (var param in parameters)
             {
                 Declare(param);
                 Define(param);
             }
 
-            Resolve(stmt.Body);
+            Resolve(body);
             EndScope();
+            _currentFunction = enclosingFunction;
+        }
+
+        private void ResolveFunction(Expr.Function expr)
+        {
+            ResolveFunction(FunctionType.Function, expr.Parameters, expr.Body);
         }
 
         public Unit VisitReturn(Stmt.Return stmt)
         {
-            Resolve(stmt.Value);
+            if (_currentFunction == FunctionType.None)
+                _errors.AddResolverError(stmt.Keyword, "Cannot return from top-level code");
+
+            if (stmt.Value != null)
+                Resolve(stmt.Value);
+
             return Unit.Default;
         }
     }

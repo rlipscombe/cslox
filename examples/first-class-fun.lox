@@ -13,3 +13,8 @@ print aggregate(1, 5, mul);     // 120
 // BUG: requires anon functions:
 var sum = fun(x, a) { return x + a; };
 print aggregate(1, 5, sum);
+
+// Functions are printable
+print aggregate;
+print sum;
+print mul;
